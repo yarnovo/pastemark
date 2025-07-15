@@ -260,55 +260,189 @@ VSCode Extension API 的限制：
 - 格式转换
 - 水印添加
 
-## 8. PasteMark 的定位
+## 8. WSL/WSL2 支持情况调研
+
+### 8.1 核心问题
+
+所有主流插件在 WSL/WSL2 环境下都面临以下挑战：
+
+1. **剪贴板访问限制**
+   - WSL 环境下的 VSCode 扩展运行在 Linux 子系统中
+   - 无法直接访问 Windows 主机的剪贴板图片数据
+   - VSCode 的 Remote-WSL 扩展导致插件运行在 WSL 端而非 Windows 端
+
+2. **路径格式冲突**
+   - Windows 路径格式：`D:\path\to\file.png`
+   - WSL 路径格式：`/mnt/d/path/to/file.png`
+   - 相对路径：`./images/file.png`
+
+3. **PowerShell 执行问题**
+   - WSL 中调用 PowerShell.exe 可能遇到授权问题
+   - "AuthorizationManager check failed" 错误
+   - 执行策略需要设置为 "bypass" 而非 "unrestricted"
+
+### 8.2 各插件 WSL 支持现状
+
+#### Paste Image (mushan)
+- **Issue #56**: "There is not an image in the clipboard" 错误
+- **Issue #82**: WSL2 中完全无法使用
+- **Issue #44**: 不支持远程开发模式
+- **现状**: 项目已停止维护，WSL 问题未解决
+
+#### Markdown Paste (telesoho)
+- **Issue #88**: WSL2 上有 15 秒延迟，生成 0 字节空文件
+- **Issue #35**: 平台检测错误，将 WSL 识别为 Windows
+- **Issue #83**: PowerShell 授权失败
+- **Issue #65**: wslpath 返回换行符导致路径错误
+- **尝试的解决方案**:
+  ```json
+  {
+    "remote.extensionKind": {
+      "telesoho.vscode-markdown-paste-image": ["ui"]
+    }
+  }
+  ```
+  强制在 UI 端运行，但仍无法正确保存文件
+
+#### Paste Image Markdown (shinyypig)
+- **Issue #11**: 开发者表示不熟悉 WSL2，需要更多信息
+- **Issue #29**: 路径保存为 Windows 格式而非 WSL 格式
+- **Issue #6**: "spawn powershell.exe ENOENT" 错误
+- **部分修复**: Issue #6 已修复
+
+#### Markdown All in One (yzhang)
+- 未发现特定的 WSL 相关 issues
+- 主要依赖 VSCode 原生功能，WSL 兼容性较好
+
+#### markdown image paste (njLeonZhang)
+- 使用 Electron 进程读取剪贴板
+- 通过 node-ipc 通信
+- WSL 环境下仍存在剪贴板访问问题
+
+### 8.3 社区解决方案
+
+#### 1. 路径转换方案
+使用 `wslpath` 工具转换路径：
+```bash
+# Windows to WSL
+wslpath "D:\path\to\file.png"
+# 输出: /mnt/d/path/to/file.png
+
+# WSL to Windows
+wslpath -w "/mnt/d/path/to/file.png"
+# 输出: D:\path\to\file.png
+```
+
+#### 2. WSL 检测
+使用 `is-wsl` npm 包检测 WSL 环境：
+```javascript
+const isWsl = require('is-wsl');
+if (isWsl) {
+  // WSL specific logic
+}
+```
+
+#### 3. Fork 实现
+- 有开发者在 fork 中实现了 WSL 支持
+- 主要工作包括路径转换和改进剪贴板访问
+- Building Better Software Slower 博客详细介绍了实现过程
+
+#### 4. 替代方案
+- **claude-image-paste**: 专门为 WSL 设计的插件
+- 智能路径转换
+- 改进的剪贴板处理
+
+### 8.4 技术实现要点
+
+1. **剪贴板访问**
+   ```powershell
+   # 从 WSL 调用 Windows PowerShell
+   powershell.exe -NoProfile -ExecutionPolicy Bypass -File script.ps1
+   ```
+
+2. **路径处理**
+   ```typescript
+   // 检测并转换路径
+   if (isWsl && path.startsWith('/mnt/')) {
+     const windowsPath = await execCommand('wslpath -w ' + path);
+     return windowsPath.trim(); // 注意去除换行符
+   }
+   ```
+
+3. **临时文件位置**
+   - Windows 临时目录在 WSL 中可访问
+   - 使用 `/mnt/c/Users/username/AppData/Local/Temp/`
+
+### 8.5 PasteMark 的 WSL 支持策略
+
+基于调研，PasteMark 实现了完善的 WSL 支持：
+
+1. **自动环境检测**: 使用可靠的 WSL 检测机制
+2. **智能路径转换**: 自动处理 Windows/WSL 路径格式
+3. **剪贴板桥接**: 通过 PowerShell 访问 Windows 剪贴板
+4. **错误处理**: 针对 WSL 特有问题的专门处理
+5. **性能优化**: 避免 WSL I/O 性能问题
+
+## 9. PasteMark 的定位
 
 基于以上调研，PasteMark 的差异化定位：
 
-### 8.1 核心优势
+### 9.1 核心优势
 1. **Ollama 深度集成**: 专注于本地 AI 服务，保护隐私
 2. **零配置体验**: 开箱即用，智能默认值
 3. **现代架构**: TypeScript + 模块化设计
 4. **双模式切换**: 手动/AI 命名灵活切换
+5. **完美 WSL 支持**: 业界领先的 WSL/WSL2 兼容性
 
-### 8.2 目标用户
+### 9.2 目标用户
 - 注重隐私的开发者
 - 使用 Ollama 的 AI 爱好者
 - 追求效率的 Markdown 用户
 - 需要本地化解决方案的团队
+- WSL/WSL2 环境的开发者
 
-### 8.3 技术创新
-- WSL 完美支持
+### 9.3 技术创新
+- WSL 完美支持（自动检测、路径转换、剪贴板桥接）
 - 智能降级策略
 - 性能优化（缓存机制）
 - 完善的错误处理
 
-## 9. 结论与建议
+## 10. 结论与建议
 
-### 9.1 市场现状
+### 10.1 市场现状
 - VSCode 原生功能满足基础需求
 - Paste Image 仍是最受欢迎的选择
 - Markdown Paste 功能最全但配置复杂
 - AI 集成是未来趋势
+- **WSL 支持普遍较差，是用户痛点**
 
-### 9.2 PasteMark 机会
+### 10.2 PasteMark 机会
 1. **简化 AI 集成**: 让 AI 命名像手动命名一样简单
 2. **本地化优势**: 强调数据安全和隐私保护
 3. **用户体验**: 在功能和易用性之间找到平衡
 4. **社区驱动**: 开源、透明、快速响应
+5. **WSL 支持领先**: 填补市场空白，解决用户痛点
 
-### 9.3 未来展望
+### 10.3 未来展望
 - 支持更多 AI 模型（本地优先）
 - 图片处理功能（压缩、格式转换）
 - 团队协作特性
 - 与其他 Markdown 工具集成
 
-## 10. 参考资料
+## 11. 参考资料
 
 1. VSCode 1.79 Release Notes - Markdown Image Pasting
 2. Paste Image Extension Documentation
 3. Markdown Paste GitHub Repository
 4. VSCode Extension API Documentation
 5. Community Discussions and User Feedback
+6. GitHub Issues 讨论：
+   - mushanshitiancai/vscode-paste-image #56, #82, #44
+   - telesoho/vscode-markdown-paste-image #88, #35, #83, #65
+   - shinyypig/vscode-md-paste-image #11, #29, #6
+   - njLeonZhang/vscode-extension-mardown-image-paste
+7. Building Better Software Slower - Adding WSL Support to a VS Code Extension
+8. claude-image-paste - WSL 专用插件
 
 ---
 
