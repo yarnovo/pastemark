@@ -10,7 +10,6 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:pastemark.pasteImage",
     "onLanguage:markdown"
   ],
   "main": "./out/extension.js",
