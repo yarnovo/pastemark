@@ -2,7 +2,7 @@
   "name": "pastemark",
   "displayName": "PasteMark",
   "description": "Paste images from clipboard into markdown files",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "yarnovo",
   "repository": {
     "type": "git",
