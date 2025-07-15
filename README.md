@@ -1,198 +1,200 @@
 # PasteMark
 
-一个智能的 VSCode 插件，让您在 Markdown 文件中快速粘贴图片。支持手动命名和 AI 智能命名两种模式。
+[English](./README.md) | [中文](./README_zh.md)
 
-## 简介
+An intelligent VSCode extension that allows you to quickly paste images in Markdown files. Supports both manual naming and AI-powered intelligent naming modes.
 
-PasteMark 让图片粘贴变得简单高效。无论您是在撰写技术文档、博客文章还是笔记，只需一个快捷键就能将剪贴板中的图片保存到本地并插入到 Markdown 文件中。
+## Introduction
 
-### 核心亮点
+PasteMark makes image pasting simple and efficient. Whether you're writing technical documentation, blog posts, or notes, just use a single shortcut to save clipboard images locally and insert them into your Markdown files.
 
-- 🚀 **一键粘贴** - 使用 `Shift+Alt+V` 快速粘贴图片
-- 🎯 **智能命名** - 集成 Ollama AI 自动生成语义化文件名
-- 📝 **手动命名** - 选中文本作为图片文件名
-- 🔧 **零配置** - 开箱即用，可选配置 AI 功能
-- 🌍 **跨平台支持** - Windows、macOS、Linux、WSL 完美兼容
+### Key Features
 
-## 特性
+- 🚀 **One-Key Paste** - Quick paste images with `Shift+Alt+V`
+- 🎯 **Smart Naming** - Integrated Ollama AI for automatic semantic filename generation
+- 📝 **Manual Naming** - Use selected text as image filename
+- 🔧 **Zero Configuration** - Works out of the box, optional AI features
+- 🌍 **Cross-Platform** - Perfect support for Windows, macOS, Linux, and WSL
 
-### 两种使用模式
+## Features
 
-1. **手动命名模式**
-   - 选中文本后按快捷键
-   - 使用选中的文本作为图片文件名
-   - 适合需要精确控制文件名的场景
+### Two Usage Modes
 
-2. **智能命名模式**
-   - 直接按快捷键，无需选中文本
-   - 通过 Ollama 多模态模型分析图片内容
-   - 自动生成描述性的英文文件名
-   - Ollama 不可用时自动降级为时间戳命名
+1. **Manual Naming Mode**
+   - Select text and press the shortcut
+   - Uses selected text as the image filename
+   - Perfect for precise filename control
 
-### 其他特性
+2. **Smart Naming Mode**
+   - Press shortcut directly without text selection
+   - Analyzes image content using Ollama multimodal models
+   - Auto-generates descriptive English filenames
+   - Falls back to timestamp naming when Ollama is unavailable
 
-- 🎨 支持多种图片格式（PNG、JPG、GIF、BMP）
-- 📁 图片自动保存到 Markdown 文件同级目录（可配置路径）
-- ⚡ 快速响应，3 秒超时自动降级
-- 🛡️ 错误处理完善，自动回滚和清理
-- 🐧 完美支持 WSL 环境
-- 📊 内置调试日志输出通道
-- 🔄 文件名自动去重，避免覆盖
-- 💾 Ollama 服务可用性缓存（1 分钟）
-- 🔒 文件名安全处理（移除特殊字符）
-- 📏 文件名长度限制（最大 255 字符）
+### Additional Features
 
-## 安装
+- 🎨 Supports multiple image formats (PNG, JPG, GIF, BMP)
+- 📁 Auto-saves images to the same directory as the Markdown file (configurable)
+- ⚡ Fast response with 3-second timeout and automatic fallback
+- 🛡️ Robust error handling with automatic rollback and cleanup
+- 🐧 Perfect WSL environment support
+- 📊 Built-in debug log output channel
+- 🔄 Automatic filename deduplication to prevent overwrites
+- 💾 Ollama service availability caching (1 minute)
+- 🔒 Safe filename processing (removes special characters)
+- 📏 Filename length limit (max 255 characters)
 
-### 方式一：从 VSCode 扩展市场安装
+## Installation
 
-1. 打开 VSCode
-2. 按下 `Shift+X` 打开扩展面板
-3. 搜索 "PasteMark"
-4. 点击安装
+### Method 1: Install from VSCode Marketplace
 
-### 方式二：从源码安装
+1. Open VSCode
+2. Press `Shift+X` to open the Extensions panel
+3. Search for "PasteMark"
+4. Click Install
+
+### Method 2: Install from Source
 
 ```bash
-# 克隆仓库
+# Clone repository
 git clone https://github.com/yarnovo/pastemark.git
 cd pastemark
 
-# 安装依赖
+# Install dependencies
 npm install
 
-# 编译并复制资源文件
+# Compile and copy resources
 npm run compile
 npm run copy-resources
 
-# 在 VSCode 中按 F5 调试运行
+# Press F5 in VSCode to debug
 ```
 
-## 使用方法
+## Usage
 
-### 基本使用
+### Basic Usage
 
-1. **手动命名**：在 Markdown 文件中选中要作为图片描述的文本
-2. **复制图片**：复制任意图片到剪贴板
-3. **粘贴图片**：按下 `Shift+Alt+V`
+1. **Manual Naming**: Select text in Markdown file to use as image description
+2. **Copy Image**: Copy any image to clipboard
+3. **Paste Image**: Press `Shift+Alt+V`
 
-### 使用示例
+### Usage Examples
 
-#### 示例 1：手动命名
+#### Example 1: Manual Naming
 
 ```markdown
-<!-- 选中 "系统架构图" 这几个字，然后按 Shift+Alt+V -->
-系统架构图
+<!-- Select "system architecture" text, then press Shift+Alt+V -->
+system architecture
 
-<!-- 自动转换为 -->
-![系统架构图](./系统架构图.png)
+<!-- Auto-converts to -->
+![system architecture](./system-architecture.png)
 ```
 
-#### 示例 2：智能命名（需要 Ollama）
+#### Example 2: Smart Naming (requires Ollama)
 
 ```markdown
-<!-- 光标在此处，直接按 Shift+Alt+V -->
+<!-- Cursor here, press Shift+Alt+V directly -->
 |
 
-<!-- 自动插入（假设 AI 识别为用户界面流程图）-->
+<!-- Auto-inserts (assuming AI identifies as user interface flow) -->
 ![user-interface-flow](./user-interface-flow.png)
 ```
 
-#### 示例 3：降级命名（Ollama 不可用时）
+#### Example 3: Fallback Naming (when Ollama unavailable)
 
 ```markdown
-<!-- 光标在此处，Ollama 服务未启动 -->
+<!-- Cursor here, Ollama service not running -->
 |
 
-<!-- 自动插入时间戳命名 -->
+<!-- Auto-inserts with timestamp naming -->
 ![image](./image-20250115-143025.png)
 ```
 
-## 配置选项
+## Configuration Options
 
-在 VSCode 设置中可以配置以下选项：
+Configure the following options in VSCode settings:
 
 ```json
 {
-  // 启用/禁用 Ollama 智能命名
+  // Enable/disable Ollama smart naming
   "pastemark.ollamaEnabled": true,
   
-  // Ollama 服务地址
+  // Ollama service endpoint
   "pastemark.ollamaEndpoint": "http://localhost:11434",
   
-  // 使用的模型（任何支持图片输入的 Ollama 模型）
+  // Model to use (any Ollama model supporting image input)
   "pastemark.ollamaModel": "llava",
   
-  // 自定义提示词（可指定语言、格式和风格）
+  // Custom prompt (specify language, format, and style)
   "pastemark.ollamaPrompt": "Analyze this image and provide a short, descriptive filename (2-4 words, English, use hyphens to separate words, no file extension). For example: \"user-interface-design\" or \"system-architecture\". Only respond with the filename, nothing else.",
   
-  // 图片保存路径（相对于当前文件）
+  // Image save path (relative to current file)
   "pastemark.imagePath": "./",
   
-  // 默认图片格式（支持 png, jpg, jpeg, gif, bmp）
+  // Default image format (supports png, jpg, jpeg, gif, bmp)
   "pastemark.imageFormat": "png"
 }
 ```
 
-## Ollama 智能命名配置
+## Ollama Smart Naming Setup
 
-要使用 AI 智能命名功能，需要完成以下 **4 个必要步骤**：
+To use AI smart naming features, complete these **4 required steps**:
 
-### 1. 安装 Ollama
+### 1. Install Ollama
 
-**Windows/macOS**：
-- 访问 [https://ollama.com/](https://ollama.com/) 下载安装包
+**Windows/macOS**:
+- Visit [https://ollama.com/](https://ollama.com/) to download installer
 
-**Linux**：
+**Linux**:
 ```bash
 curl -fsSL https://ollama.com/install.sh | sh
 ```
 
-### 2. 启动 Ollama 服务
+### 2. Start Ollama Service
 
 ```bash
-# 方法1: 直接启动（前台运行）
+# Method 1: Direct start (foreground)
 ollama serve
 
-# 方法2: 后台启动
+# Method 2: Background start
 nohup ollama serve > ollama.log 2>&1 &
 ```
 
-⚠️ **重要**：Ollama 服务必须保持运行状态，插件才能调用 AI 功能。
+⚠️ **Important**: Ollama service must remain running for AI features to work.
 
-### 3. 下载视觉模型
+### 3. Download Vision Model
 
 ```bash
-# 下载默认的 llava 模型（约 4GB）
+# Download default llava model (~4GB)
 ollama pull llava
 
-# 或者选择其他视觉模型
-ollama pull llava:13b    # 更高精度，约 8GB
-ollama pull qwen2-vl     # 2025推荐，中英文支持
-ollama pull pixtral      # 最新技术
-ollama pull moondream    # 轻量快速
+# Or choose other vision models
+ollama pull llava:13b    # Higher accuracy, ~8GB
+ollama pull qwen2-vl     # 2025 recommended, great Chinese/English support
+ollama pull pixtral      # Latest technology
+ollama pull moondream    # Lightweight and fast
 
-# 支持任何 Ollama 视觉模型
+# Supports any Ollama vision model
 ollama pull your-preferred-vision-model
 ```
 
-### 4. 验证安装
+### 4. Verify Installation
 
 ```bash
-# 检查 Ollama 服务状态
+# Check Ollama service status
 curl http://localhost:11434/api/tags
 
-# 列出已安装的模型
+# List installed models
 ollama list
 
-# 测试模型（可选）
+# Test model (optional)
 ollama run llava "Describe this image" --image /path/to/image.jpg
-ollama run qwen2-vl "分析这个图片" --image /path/to/image.jpg
+ollama run qwen2-vl "Analyze this image" --image /path/to/image.jpg
 ```
 
-### 5. VSCode 配置
+### 5. VSCode Configuration
 
-在 VSCode 设置中确认以下配置：
+Confirm the following settings in VSCode:
 
 ```json
 {
@@ -203,94 +205,94 @@ ollama run qwen2-vl "分析这个图片" --image /path/to/image.jpg
 }
 ```
 
-### 使用流程
+### Usage Workflow
 
-1. **准备阶段**：
-   - 确保 Ollama 服务正在运行
-   - 确保所需模型已下载（如 llava、qwen2-vl 等）
-   - 确保 VSCode 配置正确
+1. **Preparation**:
+   - Ensure Ollama service is running
+   - Ensure required models are downloaded (e.g., llava, qwen2-vl)
+   - Ensure VSCode configuration is correct
 
-2. **使用阶段**：
-   - 截图或复制图片到剪贴板
-   - 在 Markdown 文件中按 `Shift+Alt+V`
-   - 系统会自动检查 Ollama 服务可用性
-   - 如果可用，发送图片到配置的模型进行分析
-   - 如果不可用，自动回退到时间戳命名
+2. **Usage**:
+   - Take screenshot or copy image to clipboard
+   - Press `Shift+Alt+V` in Markdown file
+   - System automatically checks Ollama service availability
+   - If available, sends image to configured model for analysis
+   - If unavailable, falls back to timestamp naming
 
-### 故障排除
+### Troubleshooting
 
-**常见问题及解决方案**：
+**Common Issues and Solutions**:
 
-1. **服务不可用**：
+1. **Service Unavailable**:
    ```bash
-   # 检查服务状态
+   # Check service status
    curl http://localhost:11434/api/tags
    
-   # 重启服务
+   # Restart service
    ollama serve
    ```
 
-2. **模型未找到**：
+2. **Model Not Found**:
    ```bash
-   # 检查已安装的模型
+   # Check installed models
    ollama list
    
-   # 下载所需模型
+   # Download required model
    ollama pull llava
    ollama pull qwen2-vl
    ollama pull your-configured-model
    ```
 
-3. **网络超时**：
-   - 检查 localhost:11434 端口是否被占用
-   - 检查防火墙设置
+3. **Network Timeout**:
+   - Check if localhost:11434 port is in use
+   - Check firewall settings
 
-4. **返回空结果**：
-   - 可能是图片内容无法识别
-   - 尝试使用不同的图片
+4. **Empty Result**:
+   - Image content may not be recognizable
+   - Try different images
 
-### 性能优化建议
+### Performance Optimization
 
-1. **模型选择**：
-   - `llava`（默认）- 平衡性能和准确性
-   - `llava:13b` - 更高准确性，但更慢
-   - `moondream` - 更快速度，但准确性较低
+1. **Model Selection**:
+   - `llava` (default) - Balanced performance and accuracy
+   - `llava:13b` - Higher accuracy but slower
+   - `moondream` - Faster but lower accuracy
 
-2. **系统资源**：
-   - 建议至少 8GB 内存
-   - SSD 硬盘可提升模型加载速度
+2. **System Resources**:
+   - Recommend at least 8GB RAM
+   - SSD improves model loading speed
 
-3. **缓存策略**：
-   - 服务可用性检查缓存 1 分钟
-   - 避免频繁的网络请求
+3. **Caching Strategy**:
+   - Service availability check cached for 1 minute
+   - Avoids frequent network requests
 
-## 模型和提示词配置
+## Model and Prompt Configuration
 
-### 支持的模型
+### Supported Models
 
-PasteMark 支持所有 Ollama 视觉模型，**不限制模型选择**。用户可以使用任何支持图像输入的模型：
+PasteMark supports all Ollama vision models with **no model restrictions**. You can use any model that supports image input:
 
-#### 常用推荐模型
+#### Commonly Recommended Models
 
-| 模型名称 | 参数规模 | 推荐用途 | 性能特点 |
-|---------|---------|---------|---------|
-| `llava` | 7B | 默认选择 | 平衡性能和速度 |
-| `llava:13b` | 13B | 高质量命名 | 更准确的描述 |
-| `llava:34b` | 34B | 专业应用 | 最高准确性 |
-| `llava-llama3` | 8B | 新一代 | 基于 Llama 3 |
-| `qwen2-vl` | 7B | 2025推荐 | 优秀的中英文支持 |
-| `qwen2-vl:72b` | 72B | 顶级性能 | 工业级应用 |
-| `pixtral` | 12B | 最新技术 | 先进的视觉理解 |
-| `moondream` | 1.7B | 轻量快速 | 资源受限环境 |
+| Model Name | Parameters | Recommended Use | Performance |
+|------------|------------|-----------------|-------------|
+| `llava` | 7B | Default choice | Balanced performance |
+| `llava:13b` | 13B | High-quality naming | More accurate descriptions |
+| `llava:34b` | 34B | Professional use | Highest accuracy |
+| `llava-llama3` | 8B | Next generation | Based on Llama 3 |
+| `qwen2-vl` | 7B | 2025 recommended | Excellent Chinese/English |
+| `qwen2-vl:72b` | 72B | Top performance | Industrial applications |
+| `pixtral` | 12B | Latest tech | Advanced vision understanding |
+| `moondream` | 1.7B | Lightweight | Resource-constrained environments |
 
-#### 自定义模型
+#### Custom Models
 
-你还可以使用：
-- 任何 Ollama 支持的视觉模型
-- 自定义训练的模型
-- 未来发布的新模型
+You can also use:
+- Any Ollama-supported vision model
+- Custom trained models
+- Future released models
 
-**示例配置**：
+**Example Configuration**:
 ```json
 {
   "pastemark.ollamaModel": "your-custom-vision-model",
@@ -299,161 +301,161 @@ PasteMark 支持所有 Ollama 视觉模型，**不限制模型选择**。用户�
 }
 ```
 
-### 自定义提示词
+### Custom Prompts
 
-通过 `pastemark.ollamaPrompt` 配置可以完全自定义 AI 行为：
+Fully customize AI behavior through `pastemark.ollamaPrompt` configuration:
 
-#### 英文文件名（默认）
+#### English Filenames (Default)
 ```json
 {
   "pastemark.ollamaPrompt": "Analyze this image and provide a short, descriptive filename (2-4 words, English, use hyphens to separate words, no file extension). For example: \"user-interface-design\" or \"system-architecture\". Only respond with the filename, nothing else."
 }
 ```
 
-#### 中文文件名
+#### Chinese Filenames
 ```json
 {
   "pastemark.ollamaPrompt": "分析这个图片并提供一个简短的描述性文件名（2-4个词，中文，用连字符分隔，不要扩展名）。例如：\"用户界面设计\" 或 \"系统架构图\"。只返回文件名，不要其他内容。"
 }
 ```
 
-#### 技术风格命名
+#### Technical Style Naming
 ```json
 {
   "pastemark.ollamaPrompt": "Analyze this image and generate a technical filename using programming conventions (lowercase, underscores, descriptive, no file extension). Examples: \"api_endpoint_diagram\", \"database_schema\". Only respond with the filename."
 }
 ```
 
-#### 详细描述风格
+#### Detailed Description Style
 ```json
 {
   "pastemark.ollamaPrompt": "Analyze this image and create a detailed descriptive filename (5-8 words, English, use hyphens, no file extension). Be specific about what you see. Examples: \"mobile-app-login-screen-mockup\", \"data-flow-architecture-diagram-overview\"."
 }
 ```
 
-#### 简短风格
+#### Short Style
 ```json
 {
   "pastemark.ollamaPrompt": "Analyze this image and provide a very short filename (1-2 words, English, lowercase, no file extension). Examples: \"diagram\", \"mockup\", \"chart\"."
 }
 ```
 
-### 配置模型和提示词
+### Configuring Model and Prompt
 
-1. **通过 VSCode 设置界面**：
-   - 打开 VSCode 设置 (`,`)
-   - 搜索 "pastemark"
-   - 修改 `Ollama Model` 和 `Ollama Prompt`
+1. **Via VSCode Settings UI**:
+   - Open VSCode Settings (`,`)
+   - Search for "pastemark"
+   - Modify `Ollama Model` and `Ollama Prompt`
 
-2. **通过 settings.json**：
+2. **Via settings.json**:
    ```json
    {
      "pastemark.ollamaModel": "qwen2-vl",
-     "pastemark.ollamaPrompt": "分析图片内容，生成中文文件名（2-3个词，用连字符连接）"
+     "pastemark.ollamaPrompt": "Analyze the image and generate a Chinese filename (2-3 words, hyphen-separated)"
    }
    ```
 
-3. **通过工作区设置**：
-   在项目根目录创建 `.vscode/settings.json`
+3. **Via Workspace Settings**:
+   Create `.vscode/settings.json` in project root
 
-### 模型兼容性
+### Model Compatibility
 
-PasteMark 使用标准的 Ollama API，因此与所有 Ollama 支持的视觉模型兼容：
+PasteMark uses standard Ollama API, compatible with all Ollama-supported vision models:
 
-- ✅ **现有模型**：所有当前可用的视觉模型
-- ✅ **未来模型**：自动支持新发布的模型  
-- ✅ **自定义模型**：支持用户自训练的模型
-- ✅ **版本变体**：支持不同参数规模的变体
+- ✅ **Existing Models**: All currently available vision models
+- ✅ **Future Models**: Automatically supports newly released models  
+- ✅ **Custom Models**: Supports user-trained models
+- ✅ **Version Variants**: Supports different parameter scale variants
 
-**验证模型可用性**：
+**Verify Model Availability**:
 ```bash
-# 查看已安装的模型
+# View installed models
 ollama list
 
-# 测试模型是否支持图像
+# Test if model supports images
 ollama run your-model "describe this image" --image test.jpg
 ```
 
-## 常见问题
+## FAQ
 
-### Q: 为什么粘贴时提示"剪贴板中没有图片"？
+### Q: Why does it say "No image in clipboard" when pasting?
 
-A: 请确保您已经复制了图片到剪贴板。支持从以下来源复制：
-- 截图工具（如 Windows Snipping Tool、macOS Screenshot、Linux Screenshot）
-- 网页中的图片（右键复制图片）
-- 其他应用程序中的图片
+A: Make sure you've copied an image to clipboard. Supported sources:
+- Screenshot tools (Windows Snipping Tool, macOS Screenshot, Linux Screenshot)
+- Images from web pages (right-click copy image)
+- Images from other applications
 
-### Q: 如何在 WSL 中使用？
+### Q: How to use in WSL?
 
-A: PasteMark 已经针对 WSL 环境优化：
-1. 自动调用 Windows 的 PowerShell 读取剪贴板
-2. 自动进行路径格式转换
-3. 支持 WSL 1 和 WSL 2
-4. 无需额外配置
+A: PasteMark is optimized for WSL environments:
+1. Automatically calls Windows PowerShell to read clipboard
+2. Automatically converts path formats
+3. Supports both WSL 1 and WSL 2
+4. No additional configuration needed
 
-### Q: Ollama 连接失败怎么办？
+### Q: What if Ollama connection fails?
 
-A: 请按照上面的 **Ollama 智能命名配置** 章节完成所有 4 个必要步骤：
-1. 安装 Ollama
-2. 启动 Ollama 服务
-3. 下载模型（如 llava、qwen2-vl 等）
-4. 验证安装
+A: Follow all **4 required steps** in the **Ollama Smart Naming Setup** section:
+1. Install Ollama
+2. Start Ollama service
+3. Download models (e.g., llava, qwen2-vl)
+4. Verify installation
 
-如果想使用特定模型，请确保已下载该模型：
+To use a specific model, ensure it's downloaded:
 ```bash
 ollama pull your-desired-model
 ```
 
-### Q: 支持哪些图片格式？
+### Q: What image formats are supported?
 
-A: 支持以下图片格式：PNG、JPG、JPEG、GIF、BMP。默认保存为 PNG 格式，可通过配置修改。
+A: Supports: PNG, JPG, JPEG, GIF, BMP. Default saves as PNG, configurable.
 
-### Q: 图片保存在哪里？
+### Q: Where are images saved?
 
-A: 默认保存在 Markdown 文件的同级目录。可以通过 `pastemark.imagePath` 配置修改保存路径：
-- `"./"`：当前文件目录（默认）
-- `"./images/"`：当前文件的 images 子目录
-- `"../assets/"`：上级目录的 assets 文件夹
+A: Default saves in the same directory as the Markdown file. Configure via `pastemark.imagePath`:
+- `"./"`: Current file directory (default)
+- `"./images/"`: images subdirectory
+- `"../assets/"`: parent directory's assets folder
 
-### Q: 文件名重复怎么办？
+### Q: What happens with duplicate filenames?
 
-A: PasteMark 会自动处理文件名冲突：
-- 如果文件已存在，会自动添加数字后缀
-- 例如：`diagram.png` → `diagram-1.png` → `diagram-2.png`
+A: PasteMark automatically handles filename conflicts:
+- If file exists, automatically adds numeric suffix
+- Example: `diagram.png` → `diagram-1.png` → `diagram-2.png`
 
-## 贡献
+## Contributing
 
-欢迎提交 Issue 和 Pull Request！
+Issues and Pull Requests are welcome!
 
-## 许可证
+## License
 
 MIT License
 
-## 开发状态
+## Development Status
 
-✅ **已完成的功能**：
-- 核心功能实现（剪贴板图片检测、文件保存、Markdown 语法生成）
-- 手动命名模式（选中文本作为图片名）
-- 智能命名模式（Ollama AI 集成）
-- 降级策略（Ollama 不可用时使用时间戳）
-- 完整的测试套件（78个测试，55.91% 覆盖率）
-- TypeScript 类型安全
-- 模块化架构设计
-- 跨平台剪贴板支持（Windows、macOS、Linux、WSL）
-- 完整的扩展入口实现
-- 输出通道日志记录
-- 文件名去重机制
-- 错误回滚机制
-- 临时文件自动清理
-- 路径验证和创建
+✅ **Completed Features**:
+- Core functionality (clipboard image detection, file saving, Markdown syntax generation)
+- Manual naming mode (selected text as filename)
+- Smart naming mode (Ollama AI integration)
+- Fallback strategy (timestamp naming when Ollama unavailable)
+- Complete test suite (78 tests, 55.91% coverage)
+- TypeScript type safety
+- Modular architecture design
+- Cross-platform clipboard support (Windows, macOS, Linux, WSL)
+- Complete extension entry implementation
+- Output channel logging
+- Filename deduplication mechanism
+- Error rollback mechanism
+- Automatic temporary file cleanup
+- Path validation and creation
 
-🚧 **计划中的功能**：
-- 支持更多图片格式（WebP、TIFF）
-- 图片压缩选项
-- 批量粘贴功能
-- 图片水印功能
-- 历史记录管理
+🚧 **Planned Features**:
+- Support more image formats (WebP, TIFF)
+- Image compression options
+- Batch paste functionality
+- Image watermark feature
+- History management
 
-## 更新日志
+## Changelog
 
-详见 [CHANGELOG.md](./CHANGELOG.md)
+See [CHANGELOG.md](./CHANGELOG.md)
