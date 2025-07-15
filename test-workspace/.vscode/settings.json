@@ -1,0 +1,8 @@
+{
+    "pastemark.ollamaEnabled": true,
+    "pastemark.imagePath": "./",
+    "pastemark.imageFormat": "png",
+    "pastemark.ollamaEndpoint": "http://localhost:11434",
+    "pastemark.ollamaModel": "llava",
+    "pastemark.ollamaPrompt": "Analyze this image and provide a short, descriptive filename (2-4 words, English, use hyphens to separate words, no file extension). For example: \"user-interface-design\" or \"system-architecture\". Only respond with the filename, nothing else."
+}

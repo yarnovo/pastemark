@@ -35,10 +35,19 @@ async function main() {
  */
 async function runScenarioTests(extensionDevelopmentPath: string, extensionTestsPath: string) {
   try {
+    // 创建测试工作区目录
+    const testWorkspacePath = path.resolve(__dirname, '../../test-workspace')
+    const fs = require('fs')
+    
+    if (!fs.existsSync(testWorkspacePath)) {
+      fs.mkdirSync(testWorkspacePath, { recursive: true })
+    }
+
     await runTests({
       extensionDevelopmentPath,
       extensionTestsPath,
       launchArgs: [
+        testWorkspacePath,       // 指定工作区路径
         '--disable-extensions',  // 禁用其他扩展，避免干扰
         '--disable-gpu',         // 在 CI 环境中禁用 GPU
         '--no-sandbox',          // 某些环境需要
