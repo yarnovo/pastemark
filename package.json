@@ -9,21 +9,28 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onCommand:pastemark.pasteImage",
+    "onLanguage:markdown"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
         "command": "pastemark.pasteImage",
         "title": "Paste Image from Clipboard"
+      },
+      {
+        "command": "pastemark.testClipboard",
+        "title": "Test Clipboard"
       }
     ],
     "keybindings": [
       {
         "command": "pastemark.pasteImage",
-        "key": "ctrl+alt+v",
-        "mac": "cmd+alt+v",
-        "when": "editorTextFocus && resourceExtname == .md"
+        "key": "shift+alt+v",
+        "mac": "shift+alt+v",
+        "when": "editorTextFocus"
       }
     ],
     "configuration": {
@@ -42,7 +49,12 @@
         "pastemark.ollamaModel": {
           "type": "string",
           "default": "llava",
-          "description": "Ollama model to use for image analysis (must support vision)"
+          "description": "Ollama model to use for image analysis (must support vision). Examples: llava, llava:13b, qwen2-vl, pixtral, moondream, etc."
+        },
+        "pastemark.ollamaPrompt": {
+          "type": "string",
+          "default": "Analyze this image and provide a short, descriptive filename (2-4 words, English, use hyphens to separate words, no file extension). For example: \"user-interface-design\" or \"system-architecture\". Only respond with the filename, nothing else.",
+          "description": "Custom prompt for Ollama image analysis. You can specify language, format, and style requirements."
         },
         "pastemark.imagePath": {
           "type": "string",
@@ -65,27 +77,33 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "vscode:prepublish": "npm run compile && npm run copy-resources",
     "compile": "tsc -p ./",
+    "compile:e2e": "tsc -p ./tsconfig.e2e.json",
     "watch": "tsc -watch -p ./",
+    "copy-resources": "node scripts/copy-resources.js",
     "test": "npm run test:unit && npm run test:integration",
     "test:unit": "vitest run --dir tests/unit",
     "test:integration": "vitest run --dir tests/integration",
     "test:watch": "vitest watch",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
-    "test:e2e": "npm run compile && node ./e2e/runTests.js",
+    "test:e2e": "npm run compile && npm run copy-resources && node ./out/e2e/runTests.js",
     "test:all": "npm run test && npm run test:e2e",
     "lint": "eslint src --ext ts",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@playwright/test": "^1.54.1",
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.10",
     "@types/node": "^20.19.7",
     "@types/vscode": "^1.102.0",
     "@vitest/coverage-v8": "^3.2.4",
     "@vitest/ui": "^3.2.4",
     "@vscode/test-electron": "^2.5.2",
+    "glob": "^11.0.3",
+    "mocha": "^11.7.1",
     "playwright": "^1.54.1",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4"

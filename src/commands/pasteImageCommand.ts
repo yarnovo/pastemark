@@ -1,18 +1,20 @@
 import * as vscode from 'vscode'
 import * as path from 'path'
-import { ClipboardService } from '../services/clipboardService'
+import { ClipboardManager } from '../clipboard/clipboardManager'
 import { ImageProcessor } from '../services/imageProcessor'
 import { FileManager } from '../services/fileManager'
 import { EditorService } from '../services/editorService'
 
 export class PasteImageCommand {
-  private clipboardService: ClipboardService
+  private clipboardManager: ClipboardManager
   private imageProcessor: ImageProcessor
   private fileManager: FileManager
   private editorService: EditorService
+  private outputChannel?: vscode.OutputChannel
 
-  constructor() {
-    this.clipboardService = new ClipboardService()
+  constructor(extensionPath: string, outputChannel?: vscode.OutputChannel) {
+    this.outputChannel = outputChannel
+    this.clipboardManager = new ClipboardManager(extensionPath, outputChannel)
     this.imageProcessor = new ImageProcessor()
     this.fileManager = new FileManager()
     this.editorService = new EditorService()
@@ -30,18 +32,21 @@ export class PasteImageCommand {
       }
 
       // 2. 检查剪贴板是否有图片
-      const hasImage = await this.clipboardService.hasImage()
+      this.log('检查剪贴板中的图片...')
+      const hasImage = await this.clipboardManager.hasImage()
       if (!hasImage) {
         vscode.window.showWarningMessage('剪贴板中没有图片')
         return
       }
 
       // 3. 获取图片数据
-      const imageData = await this.clipboardService.getImage()
+      this.log('读取剪贴板图片...')
+      const imageData = await this.clipboardManager.getImage()
       if (!imageData) {
         vscode.window.showErrorMessage('无法读取剪贴板中的图片')
         return
       }
+      this.log(`成功读取图片: ${imageData.buffer.length} 字节, 格式: ${imageData.format}`)
 
       // 4. 获取选中的文本（如果有）
       const selection = this.editorService.getSelection()
@@ -103,9 +108,34 @@ export class PasteImageCommand {
       // 11. 显示成功消息
       vscode.window.showInformationMessage(`图片已保存: ${path.basename(uniqueImagePath)}`)
 
+      // 12. 清理临时文件
+      await this.clipboardManager.cleanup()
+
     } catch (error: any) {
-      console.error('PasteImageCommand error:', error)
+      this.logError('PasteImageCommand error', error)
       vscode.window.showErrorMessage(`粘贴图片失败: ${error.message}`)
+      
+      // 清理临时文件
+      try {
+        await this.clipboardManager.cleanup()
+      } catch (cleanupError) {
+        this.logError('Cleanup error', cleanupError)
+      }
     }
+  }
+
+  private log(message: string): void {
+    if (this.outputChannel) {
+      this.outputChannel.appendLine(`[PasteImageCommand] ${message}`)
+    }
+    console.log(`[PasteMark][PasteImageCommand] ${message}`)
+  }
+
+  private logError(message: string, error?: any): void {
+    const errorMsg = error ? `${message}: ${error.message || error}` : message
+    if (this.outputChannel) {
+      this.outputChannel.appendLine(`[PasteImageCommand] ERROR: ${errorMsg}`)
+    }
+    console.error(`[PasteMark][PasteImageCommand] ERROR:`, errorMsg)
   }
 }

@@ -1,0 +1,5 @@
+{
+  "pastemark.ollamaEnabled": false,
+  "pastemark.imagePath": "./assets/",
+  "pastemark.imageFormat": "png"
+}

@@ -1,0 +1,6 @@
+{
+  "pastemark.ollamaEnabled": true,
+  "pastemark.ollamaEndpoint": "http://localhost:11434",
+  "pastemark.imagePath": "./images/",
+  "pastemark.imageFormat": "png"
+}

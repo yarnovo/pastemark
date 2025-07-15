@@ -3,6 +3,7 @@ import * as vscode from 'vscode'
 export class OllamaClient {
   private endpoint: string
   private model: string
+  private prompt: string
   private timeout: number = 3000 // 3秒超时
   private isAvailableCache: boolean | null = null
   private lastAvailabilityCheck: number = 0
@@ -12,6 +13,7 @@ export class OllamaClient {
     const config = vscode.workspace.getConfiguration('pastemark')
     this.endpoint = config.get<string>('ollamaEndpoint') || 'http://localhost:11434'
     this.model = config.get<string>('ollamaModel') || 'llava'
+    this.prompt = config.get<string>('ollamaPrompt') || 'Analyze this image and provide a short, descriptive filename (2-4 words, English, use hyphens to separate words, no file extension). For example: "user-interface-design" or "system-architecture". Only respond with the filename, nothing else.'
   }
 
   /**
@@ -62,7 +64,7 @@ export class OllamaClient {
         },
         body: JSON.stringify({
           model: this.model,
-          prompt: 'Analyze this image and provide a short, descriptive filename (2-4 words, English, use hyphens to separate words, no file extension). For example: "user-interface-design" or "system-architecture". Only respond with the filename, nothing else.',
+          prompt: this.prompt,
           images: [base64Image],
           stream: false
         }),
@@ -121,6 +123,7 @@ export class OllamaClient {
     const config = vscode.workspace.getConfiguration('pastemark')
     this.endpoint = config.get<string>('ollamaEndpoint') || 'http://localhost:11434'
     this.model = config.get<string>('ollamaModel') || 'llava'
+    this.prompt = config.get<string>('ollamaPrompt') || 'Analyze this image and provide a short, descriptive filename (2-4 words, English, use hyphens to separate words, no file extension). For example: "user-interface-design" or "system-architecture". Only respond with the filename, nothing else.'
     // 清除缓存
     this.isAvailableCache = null
     this.lastAvailabilityCheck = 0
