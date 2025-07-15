@@ -1,0 +1,93 @@
+{
+  "name": "pastemark",
+  "displayName": "PasteMark",
+  "description": "Paste images from clipboard into markdown files",
+  "version": "0.0.0",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "pastemark.pasteImage",
+        "title": "Paste Image from Clipboard"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "pastemark.pasteImage",
+        "key": "ctrl+alt+v",
+        "mac": "cmd+alt+v",
+        "when": "editorTextFocus && resourceExtname == .md"
+      }
+    ],
+    "configuration": {
+      "title": "PasteMark",
+      "properties": {
+        "pastemark.ollamaEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Ollama AI for intelligent image naming"
+        },
+        "pastemark.ollamaEndpoint": {
+          "type": "string",
+          "default": "http://localhost:11434",
+          "description": "Ollama service endpoint URL"
+        },
+        "pastemark.ollamaModel": {
+          "type": "string",
+          "default": "llava",
+          "description": "Ollama model to use for image analysis (must support vision)"
+        },
+        "pastemark.imagePath": {
+          "type": "string",
+          "default": "./",
+          "description": "Path to save images (relative to current file)"
+        },
+        "pastemark.imageFormat": {
+          "type": "string",
+          "default": "png",
+          "enum": [
+            "png",
+            "jpg",
+            "jpeg",
+            "gif",
+            "bmp"
+          ],
+          "description": "Default image format for saving"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "vitest run --dir tests/unit",
+    "test:integration": "vitest run --dir tests/integration",
+    "test:watch": "vitest watch",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "test:e2e": "npm run compile && node ./e2e/runTests.js",
+    "test:all": "npm run test && npm run test:e2e",
+    "lint": "eslint src --ext ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.1",
+    "@types/node": "^20.19.7",
+    "@types/vscode": "^1.102.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "@vitest/ui": "^3.2.4",
+    "@vscode/test-electron": "^2.5.2",
+    "playwright": "^1.54.1",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  }
+}
