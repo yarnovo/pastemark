@@ -35,7 +35,10 @@ src/
 │   ├── mac-clipboard.applescript
 │   └── linux-clipboard.sh
 ├── types/                 # 类型定义
-└── utils/                 # 工具函数
+│   └── index.ts
+├── utils/                 # 工具函数
+│   └── stringUtils.ts
+└── extension.ts           # 扩展入口
 ```
 
 ### 技术栈
@@ -109,7 +112,7 @@ Analyze this image and provide a short, descriptive filename (2-4 words, English
   "pastemark.ollamaModel": "llava",         // 使用的模型
   "pastemark.ollamaPrompt": "...",          // 自定义提示词
   "pastemark.imagePath": "./",              // 图片保存路径
-  "pastemark.imageFormat": "png"            // 默认图片格式
+  "pastemark.imageFormat": "png"            // 默认图片格式（png/jpg/jpeg/gif/bmp）
 }
 ```
 
@@ -137,8 +140,36 @@ Analyze this image and provide a short, descriptive filename (2-4 words, English
 - ✅ TypeScript 类型安全
 - ✅ 模块化架构设计
 - ✅ 跨平台支持（Windows、macOS、Linux、WSL）
+- ✅ 完整的扩展入口实现（extension.ts）
+- ✅ 输出通道日志记录
+- ✅ 文件名去重机制
+- ✅ 错误回滚机制
 
-### 注意事项
-- 项目缺少 extension.ts 主入口文件（需要创建）
-- 支持多种图片格式（PNG、JPG、GIF、BMP、WebP）
+### 已实现的核心组件
+- ✅ extension.ts 主入口文件
+- ✅ 完整的命令注册和生命周期管理
+- ✅ 输出通道日志记录
+- ✅ 资源文件自动处理
+
+### 待优化事项
+- 支持更多图片格式（WebP、TIFF 等）
+- 添加图片压缩选项
+- 实现批量粘贴功能
 - 完整的研究文档在 research/ 目录下
+
+## 命令执行流程
+
+1. **命令注册**：`extension.ts` 注册 `pastemark.pasteImage` 命令
+2. **环境检查**：EditorService 检查是否在 Markdown 文件中
+3. **剪贴板检测**：ClipboardManager 检测并读取图片
+4. **文件名生成**：ImageProcessor 根据配置生成文件名
+5. **文件保存**：FileManager 保存图片到指定路径
+6. **插入引用**：EditorService 插入 Markdown 图片语法
+7. **清理临时文件**：ClipboardManager 清理临时文件
+
+## 版本信息
+
+- 当前版本：0.0.0（未发布）
+- 最后更新：2025-07-15
+- Node.js 最低版本：16.x
+- VSCode 最低版本：1.74.0

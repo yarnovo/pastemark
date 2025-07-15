@@ -79,8 +79,10 @@ export class PasteImageCommand {
       try {
         await this.fileManager.saveImage(uniqueImagePath, imageData.buffer);
         savedImagePath = uniqueImagePath;
-      } catch (error: any) {
-        vscode.window.showErrorMessage(`保存图片失败: ${error.message}`);
+      } catch (error) {
+        vscode.window.showErrorMessage(
+          `保存图片失败: ${error instanceof Error ? error.message : String(error)}`
+        );
         return;
       }
 
@@ -96,12 +98,14 @@ export class PasteImageCommand {
         } else {
           await this.editorService.insertAtCursor(markdownImage);
         }
-      } catch (error: any) {
+      } catch (error) {
         // 如果插入失败，删除已保存的图片
         if (savedImagePath) {
           await this.fileManager.deleteFile(savedImagePath);
         }
-        vscode.window.showErrorMessage(`插入图片引用失败: ${error.message}`);
+        vscode.window.showErrorMessage(
+          `插入图片引用失败: ${error instanceof Error ? error.message : String(error)}`
+        );
         return;
       }
 
@@ -110,9 +114,11 @@ export class PasteImageCommand {
 
       // 12. 清理临时文件
       await this.clipboardManager.cleanup();
-    } catch (error: any) {
+    } catch (error) {
       this.logError('PasteImageCommand error', error);
-      vscode.window.showErrorMessage(`粘贴图片失败: ${error.message}`);
+      vscode.window.showErrorMessage(
+        `粘贴图片失败: ${error instanceof Error ? error.message : String(error)}`
+      );
 
       // 清理临时文件
       try {
@@ -130,8 +136,10 @@ export class PasteImageCommand {
     console.log(`[PasteMark][PasteImageCommand] ${message}`);
   }
 
-  private logError(message: string, error?: any): void {
-    const errorMsg = error ? `${message}: ${error.message || error}` : message;
+  private logError(message: string, error?: unknown): void {
+    const errorMsg = error
+      ? `${message}: ${error instanceof Error ? error.message : String(error)}`
+      : message;
     if (this.outputChannel) {
       this.outputChannel.appendLine(`[PasteImageCommand] ERROR: ${errorMsg}`);
     }

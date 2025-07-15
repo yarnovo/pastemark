@@ -22,10 +22,11 @@ export class FileManager {
 
       // 写入文件
       await vscode.workspace.fs.writeFile(uri, data);
-    } catch (error: any) {
-      if (error.message?.includes('ENOSPC')) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes('ENOSPC')) {
         throw new Error('No space left on device');
-      } else if (error.message?.includes('Permission') || error.message?.includes('EACCES')) {
+      } else if (errorMessage.includes('Permission') || errorMessage.includes('EACCES')) {
         throw new Error('Permission denied');
       }
       throw error;

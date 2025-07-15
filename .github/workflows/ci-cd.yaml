@@ -1,0 +1,148 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  # CI 作业 - 持续集成
+  ci:
+    name: Continuous Integration
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run linter
+      run: npm run lint
+    
+    - name: Type check
+      run: npm run typecheck
+    
+    - name: Run tests
+      run: npm test
+    
+    - name: Generate coverage report
+      run: npm run test:coverage
+    
+    - name: Build extension
+      run: npm run vscode:prepublish
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: extension-build
+        path: |
+          out/
+          *.vsix
+        retention-days: 7
+
+  # Package 作业 - 打包扩展
+  package:
+    name: Package Extension
+    needs: ci
+    runs-on: ubuntu-latest
+    if: success()
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install vsce
+      run: npm install -g @vscode/vsce
+    
+    - name: Build extension
+      run: npm run vscode:prepublish
+    
+    - name: Package extension
+      run: vsce package --no-dependencies
+    
+    - name: Upload VSIX package
+      uses: actions/upload-artifact@v4
+      with:
+        name: vsix-package
+        path: '*.vsix'
+        retention-days: 30
+
+  # CD 作业 - 发布到 VSCode Marketplace
+  publish:
+    name: Publish to Marketplace
+    needs: [ci, package]
+    runs-on: ubuntu-latest
+    # 仅在打 tag 时触发发布
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install vsce
+      run: npm install -g @vscode/vsce
+    
+    - name: Build extension
+      run: npm run vscode:prepublish
+    
+    - name: Package extension
+      run: vsce package --no-dependencies
+    
+    - name: Publish to VSCode Marketplace
+      env:
+        VSCE_PAT: ${{ secrets.VSCE_PAT }}
+      run: |
+        vsce publish -p $VSCE_PAT
+    
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: '*.vsix'
+        body: |
+          # PasteMark ${{ github.ref_name }}
+          
+          ## 更新内容
+          请查看 [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) 了解详细更新内容。
+          
+          ## 安装方式
+          
+          ### 从 VSCode Marketplace 安装
+          在 VSCode 扩展市场搜索 "PasteMark" 并安装。
+          
+          ### 手动安装
+          1. 下载下方的 `.vsix` 文件
+          2. 在 VSCode 中运行命令：`Extensions: Install from VSIX...`
+          3. 选择下载的文件进行安装
+        draft: false
+        prerelease: false
+        generate_release_notes: true

@@ -3,6 +3,29 @@
   "displayName": "PasteMark",
   "description": "Paste images from clipboard into markdown files",
   "version": "0.0.0",
+  "publisher": "yarnovo",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yarnovo/pastemark.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yarnovo/pastemark/issues"
+  },
+  "homepage": "https://github.com/yarnovo/pastemark#readme",
+  "license": "MIT",
+  "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#1e1e1e",
+    "theme": "dark"
+  },
+  "keywords": [
+    "markdown",
+    "image",
+    "paste",
+    "clipboard",
+    "ollama",
+    "ai"
+  ],
   "engines": {
     "vscode": "^1.74.0"
   },
@@ -77,10 +100,10 @@
     "compile:e2e": "tsc -p ./tsconfig.e2e.json",
     "watch": "tsc -watch -p ./",
     "copy-resources": "node scripts/copy-resources.js",
-    "test": "npm run test:unit && npm run test:integration && npm run test:e2e",
+    "test": "npm run test:unit && npm run test:integration",
     "test:unit": "vitest run tests/unit/**/*.test.ts",
     "test:integration": "vitest run tests/integration/**/*.test.ts",
-    "test:e2e": "npm run compile && npm run copy-resources && node ./out/e2e/runTests.js",
+    "test:e2e": "npm run compile && npm run compile:e2e && npm run copy-resources && node ./out/e2e/runTests.js",
     "test:watch": "vitest watch",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",

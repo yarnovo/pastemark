@@ -4,6 +4,6 @@
     "rootDir": ".",
     "outDir": "out"
   },
-  "include": ["src/**/*", "e2e/**/*"],
-  "exclude": ["node_modules", "tests", "vitest.config.ts"]
+  "include": ["e2e/**/*"],
+  "exclude": ["node_modules", ".vscode-test"]
 }

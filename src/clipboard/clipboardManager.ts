@@ -161,7 +161,7 @@ export class ClipboardManager implements IClipboardManager {
       if (text.startsWith('data:image/')) {
         const matches = text.match(/^data:image\/(\w+);base64,(.+)$/);
         if (!matches) return null;
-        format = matches[1] as any;
+        format = matches[1] as 'png' | 'jpg' | 'gif' | 'bmp' | 'webp';
         buffer = Buffer.from(matches[2], 'base64');
       } else {
         buffer = Buffer.from(text.trim(), 'base64');
@@ -216,8 +216,10 @@ export class ClipboardManager implements IClipboardManager {
     console.log(`[PasteMark][ClipboardManager] ${message}`);
   }
 
-  private logError(message: string, error?: any): void {
-    const errorMsg = error ? `${message}: ${error.message || error}` : message;
+  private logError(message: string, error?: unknown): void {
+    const errorMsg = error
+      ? `${message}: ${error instanceof Error ? error.message : String(error)}`
+      : message;
     if (this.outputChannel) {
       this.outputChannel.appendLine(`[ClipboardManager] ERROR: ${errorMsg}`);
     }

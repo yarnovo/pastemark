@@ -12,6 +12,7 @@ PasteMark 让图片粘贴变得简单高效。无论您是在撰写技术文档�
 - 🎯 **智能命名** - 集成 Ollama AI 自动生成语义化文件名
 - 📝 **手动命名** - 选中文本作为图片文件名
 - 🔧 **零配置** - 开箱即用，可选配置 AI 功能
+- 🌍 **跨平台支持** - Windows、macOS、Linux、WSL 完美兼容
 
 ## 特性
 
@@ -30,11 +31,14 @@ PasteMark 让图片粘贴变得简单高效。无论您是在撰写技术文档�
 
 ### 其他特性
 
-- 🎨 支持多种图片格式（PNG、JPG、GIF 等）
-- 📁 图片自动保存到 Markdown 文件同级目录
-- ⚡ 快速响应，1 秒内完成操作
-- 🛡️ 错误处理完善，使用体验流畅
+- 🎨 支持多种图片格式（PNG、JPG、GIF、BMP、WebP 等）
+- 📁 图片自动保存到 Markdown 文件同级目录（可配置路径）
+- ⚡ 快速响应，3 秒超时自动降级
+- 🛡️ 错误处理完善，自动回滚和清理
 - 🐧 完美支持 WSL2 环境
+- 📊 内置调试日志输出通道
+- 🔄 文件名自动去重，避免覆盖
+- 💾 Ollama 服务可用性缓存（1 分钟）
 
 ## 安装
 
@@ -55,8 +59,9 @@ cd pastemark
 # 安装依赖
 npm install
 
-# 编译
+# 编译并复制资源文件
 npm run compile
+npm run copy-resources
 
 # 在 VSCode 中按 F5 调试运行
 ```
@@ -122,7 +127,7 @@ npm run compile
   // 图片保存路径（相对于当前文件）
   "pastemark.imagePath": "./",
   
-  // 默认图片格式
+  // 默认图片格式（支持 png, jpg, jpeg, gif, bmp）
   "pastemark.imageFormat": "png"
 }
 ```
@@ -417,7 +422,10 @@ MIT License
 - 完整的测试套件（78个测试，55.91% 覆盖率）
 - TypeScript 类型安全
 - 模块化架构设计
+- 跨平台剪贴板支持（Windows、macOS、Linux、WSL）
+- 完整的扩展入口实现（extension.ts）
+- 输出通道日志记录
 
 ## 更新日志
 
-暂无发布版本。
+详见 [CHANGELOG.md](./CHANGELOG.md)

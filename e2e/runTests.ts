@@ -15,7 +15,7 @@ async function main() {
     console.log('🚀 启动 PasteMark E2E 测试...')
     
     const extensionDevelopmentPath = path.resolve(__dirname, '../../')
-    const extensionTestsPath = path.resolve(__dirname, '../out/e2e/scenarios')
+    const extensionTestsPath = path.resolve(__dirname, './scenarios')
 
     console.log('📁 扩展开发路径:', extensionDevelopmentPath)
     console.log('📁 测试路径:', extensionTestsPath)
@@ -34,34 +34,22 @@ async function main() {
  * 运行用户场景测试
  */
 async function runScenarioTests(extensionDevelopmentPath: string, extensionTestsPath: string) {
-  const scenarios = [
-    'novice-user.e2e.js',
-    'advanced-user.e2e.js', 
-    'developer.e2e.js'
-  ]
-  
-  for (const scenario of scenarios) {
-    console.log(`\n🎭 运行场景: ${scenario}`)
+  try {
+    await runTests({
+      extensionDevelopmentPath,
+      extensionTestsPath,
+      launchArgs: [
+        '--disable-extensions',  // 禁用其他扩展，避免干扰
+        '--disable-gpu',         // 在 CI 环境中禁用 GPU
+        '--no-sandbox',          // 某些环境需要
+        '--disable-dev-shm-usage' // 减少内存使用
+      ]
+    })
     
-    const testPath = path.join(extensionTestsPath, scenario)
-    
-    try {
-      await runTests({
-        extensionDevelopmentPath,
-        extensionTestsPath: testPath,
-        launchArgs: [
-          '--disable-extensions',  // 禁用其他扩展，避免干扰
-          '--disable-gpu',         // 在 CI 环境中禁用 GPU
-          '--no-sandbox',          // 某些环境需要
-          '--disable-dev-shm-usage' // 减少内存使用
-        ]
-      })
-      
-      console.log(`✅ 场景 ${scenario} 测试通过`)
-    } catch (error) {
-      console.error(`❌ 场景 ${scenario} 测试失败:`, error)
-      throw error
-    }
+    console.log(`✅ 所有场景测试通过`)
+  } catch (error) {
+    console.error(`❌ 场景测试失败:`, error)
+    throw error
   }
 }
 

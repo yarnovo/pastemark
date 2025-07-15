@@ -25,8 +25,10 @@ export abstract class BasePlatformClipboard implements IPlatformClipboard {
     console.log(`[PasteMark][${this.constructor.name}] ${message}`);
   }
 
-  protected logError(message: string, error?: any): void {
-    const errorMsg = error ? `${message}: ${error.message || error}` : message;
+  protected logError(message: string, error?: unknown): void {
+    const errorMsg = error
+      ? `${message}: ${error instanceof Error ? error.message : String(error)}`
+      : message;
     if (this.outputChannel) {
       this.outputChannel.appendLine(`[${this.constructor.name}] ERROR: ${errorMsg}`);
     }
