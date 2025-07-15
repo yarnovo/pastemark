@@ -81,8 +81,14 @@ PasteMark 使用 GitHub Actions 实现自动化的持续集成和持续部署。
 
 1. 访问 [Azure DevOps](https://dev.azure.com/)
 2. 创建个人访问令牌（PAT）
-3. 权限范围选择：`Marketplace > Manage`
-4. 保存生成的令牌
+   - 点击右上角用户设置 → Personal access tokens
+   - 点击 "New Token" 创建新令牌
+   - **重要**：在 "Organization" 下拉框中选择 "All accessible organizations"（这是避免 401 错误的关键）
+3. 权限范围选择：
+   - 推荐选择 "Full access"（所有权限）
+   - 或者至少选择 "Marketplace" → "Manage"
+4. 设置令牌有效期（建议 90 天或更长）
+5. 保存生成的令牌（注意：令牌只显示一次，请妥善保存）
 
 ### 2. 配置 GitHub Secret
 
@@ -97,13 +103,17 @@ PasteMark 使用 GitHub Actions 实现自动化的持续集成和持续部署。
 如果还没有发布者账号：
 
 ```bash
-# 安装 vsce
+# 安装 vsce（注意：包名已从 vsce 更改为 @vscode/vsce）
 npm install -g @vscode/vsce
 
-# 创建发布者
-vsce create-publisher <publisher-name>
+# 创建发布者（注意：create-publisher 命令已弃用）
+# 现在需要直接在 Visual Studio Marketplace 网站上创建发布者：
+# 1. 访问 https://marketplace.visualstudio.com/manage/publishers/
+# 2. 使用 Microsoft 账号登录
+# 3. 点击 "Create publisher" 创建新的发布者
+# 4. 填写发布者 ID、显示名称等信息
 
-# 登录发布者账号
+# 登录发布者账号（创建发布者后执行）
 vsce login <publisher-name>
 ```
 
