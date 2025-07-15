@@ -4,16 +4,20 @@ import { ClipboardManager } from '../clipboard/clipboardManager';
 import { ImageProcessor } from '../services/imageProcessor';
 import { FileManager } from '../services/fileManager';
 import { EditorService } from '../services/editorService';
+import { MessageService } from '../services/messageService';
+import { MESSAGES } from '../constants/messages';
 
 export class PasteImageCommand {
   private clipboardManager: ClipboardManager;
   private imageProcessor: ImageProcessor;
   private fileManager: FileManager;
   private editorService: EditorService;
+  private messageService: MessageService;
   private outputChannel?: vscode.OutputChannel;
 
   constructor(extensionPath: string, outputChannel?: vscode.OutputChannel) {
     this.outputChannel = outputChannel;
+    this.messageService = new MessageService(outputChannel);
     this.clipboardManager = new ClipboardManager(extensionPath, outputChannel);
     this.imageProcessor = new ImageProcessor();
     this.fileManager = new FileManager();
@@ -27,7 +31,7 @@ export class PasteImageCommand {
     try {
       // 1. 检查是否在 Markdown 文件中
       if (!this.editorService.isMarkdownFile()) {
-        vscode.window.showErrorMessage('Please use this feature in Markdown files');
+        this.messageService.showNotMarkdownFileError();
         return;
       }
 
@@ -35,7 +39,7 @@ export class PasteImageCommand {
       this.log('Checking clipboard for image...');
       const hasImage = await this.clipboardManager.hasImage();
       if (!hasImage) {
-        vscode.window.showWarningMessage('No image found in clipboard');
+        this.messageService.showNoImageInClipboardWarning();
         return;
       }
 
@@ -43,7 +47,7 @@ export class PasteImageCommand {
       this.log('Reading clipboard image...');
       const imageData = await this.clipboardManager.getImage();
       if (!imageData) {
-        vscode.window.showErrorMessage('Failed to read image from clipboard');
+        this.messageService.showFailedToReadImageError();
         return;
       }
       this.log(
@@ -69,7 +73,7 @@ export class PasteImageCommand {
       // 7. 构建保存路径
       const documentPath = this.editorService.getDocumentPath();
       if (!documentPath) {
-        vscode.window.showErrorMessage('Unable to get current document path');
+        this.messageService.showNoDocumentPathError();
         return;
       }
 
@@ -82,9 +86,7 @@ export class PasteImageCommand {
         await this.fileManager.saveImage(uniqueImagePath, imageData.buffer);
         savedImagePath = uniqueImagePath;
       } catch (error) {
-        vscode.window.showErrorMessage(
-          `Failed to save image: ${error instanceof Error ? error.message : String(error)}`
-        );
+        this.messageService.showFailedToSaveImageError(error);
         return;
       }
 
@@ -105,22 +107,18 @@ export class PasteImageCommand {
         if (savedImagePath) {
           await this.fileManager.deleteFile(savedImagePath);
         }
-        vscode.window.showErrorMessage(
-          `Failed to insert image reference: ${error instanceof Error ? error.message : String(error)}`
-        );
+        this.messageService.showFailedToInsertImageError(error);
         return;
       }
 
       // 11. 显示成功消息
-      vscode.window.showInformationMessage(`Image saved: ${path.basename(uniqueImagePath)}`);
+      this.messageService.showImageSavedInfo(path.basename(uniqueImagePath));
 
       // 12. 清理临时文件
       await this.clipboardManager.cleanup();
     } catch (error) {
       this.logError('PasteImageCommand error', error);
-      vscode.window.showErrorMessage(
-        `Failed to paste image: ${error instanceof Error ? error.message : String(error)}`
-      );
+      this.messageService.showFailedToPasteImageError(error);
 
       // 清理临时文件
       try {
@@ -151,30 +149,23 @@ export class PasteImageCommand {
     }
 
     // 使用 Ollama 时显示进度提示
-    return vscode.window.withProgress(
-      {
-        location: vscode.ProgressLocation.Notification,
-        title: 'Generating filename...',
-        cancellable: false,
-      },
-      async (progress) => {
-        progress.report({ increment: 0, message: 'Analyzing image...' });
+    return this.messageService.showGenerateFileNameProgress(async (progress) => {
+      progress.report({ increment: 0, message: MESSAGES.PROGRESS.ANALYZING_IMAGE });
 
-        try {
-          const fileName = await this.imageProcessor.generateFileName({
-            selectedText,
-            useOllama,
-            imageData,
-          });
+      try {
+        const fileName = await this.imageProcessor.generateFileName({
+          selectedText,
+          useOllama,
+          imageData,
+        });
 
-          progress.report({ increment: 100, message: 'Filename generated' });
-          return fileName;
-        } catch (error) {
-          progress.report({ increment: 100, message: 'Using fallback naming' });
-          throw error;
-        }
+        progress.report({ increment: 100, message: MESSAGES.PROGRESS.FILENAME_GENERATED });
+        return fileName;
+      } catch (error) {
+        progress.report({ increment: 100, message: MESSAGES.PROGRESS.USING_FALLBACK_NAMING });
+        throw error;
       }
-    );
+    });
   }
 
   private log(message: string): void {

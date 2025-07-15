@@ -176,6 +176,7 @@ Analyze this image and provide a short, descriptive filename (2-4 words, English
 - ✅ 临时文件自动清理
 - ✅ 路径验证和创建
 - ✅ CI/CD 流程（GitHub Actions）
+- ✅ 统一的消息管理系统
 
 ### 已实现的核心组件
 - ✅ extension.ts 主入口文件
@@ -208,10 +209,65 @@ Analyze this image and provide a short, descriptive filename (2-4 words, English
 7. **清理临时文件**：ClipboardManager 清理临时文件
 8. **错误处理**：如果任何步骤失败，回滚已创建的文件
 
+## 消息管理系统
+
+### 系统架构
+项目采用统一的消息管理系统，所有用户通知都通过专门的服务类进行管理：
+
+- **消息常量文件**：`src/constants/messages.ts` - 定义所有消息文本
+- **消息服务类**：`src/services/messageService.ts` - 统一的消息显示接口
+- **消息分类**：错误消息、警告消息、信息消息、进度消息
+
+### 设计优势
+1. **统一管理**：所有通知消息集中定义，便于维护和国际化
+2. **类型安全**：提供类型安全的消息显示方法
+3. **便捷方法**：为常用消息提供专门的便捷方法
+4. **日志集成**：自动记录所有消息到输出通道和控制台
+5. **进度支持**：统一的进度显示接口
+
+### 使用方式
+```typescript
+// 在构造函数中初始化
+this.messageService = new MessageService(outputChannel);
+
+// 显示错误消息
+this.messageService.showFailedToSaveImageError(error);
+
+// 显示信息消息
+this.messageService.showImageSavedInfo(fileName);
+
+// 显示进度
+this.messageService.showGenerateFileNameProgress(async (progress) => {
+  // 进度任务
+});
+```
+
+## 构建和测试
+
+### 构建脚本
+- `npm run compile` - 编译 TypeScript 代码
+- `npm run compile:e2e` - 编译端到端测试
+- `npm run copy-resources` - 复制资源文件
+- `npm run watch` - 监视模式编译
+
+### 测试脚本
+- `npm run test` - 运行全部测试
+- `npm run test:unit` - 运行单元测试
+- `npm run test:integration` - 运行集成测试
+- `npm run test:e2e` - 运行端到端测试
+- `npm run test:coverage` - 生成覆盖率报告
+
+### 代码质量
+- `npm run lint` - 运行 ESLint 检查
+- `npm run lint:fix` - 运行 ESLint 检查并自动修复
+- `npm run typecheck` - 运行 TypeScript 类型检查
+- `npm run check` - 运行完整的质量检查（lint + typecheck + test）
+
 ## 版本信息
 
-- 当前版本：0.0.0（开发中）
-- 最后更新：2025-07-15
+- 当前版本：0.1.1
+- 最后更新：2025-07-16
+
 - Node.js 最低版本：16.x
 - VSCode 最低版本：1.74.0
 - 发布者：yarnovo
