@@ -10,9 +10,11 @@ PasteMark 是一个 VSCode 插件，采用模块化架构设计，将功能划�
 - **运行时**: VSCode Extension Host
 - **构建工具**: TypeScript Compiler (tsc)
 - **目标环境**: Node.js 16.x+
+- **测试框架**: Vitest + @vscode/test-electron
 - **外部依赖**: 
   - VSCode Extension API
   - Ollama HTTP API（可选）
+- **支持平台**: Windows、macOS、Linux、WSL
 
 ## 系统架构
 
@@ -72,24 +74,32 @@ export function deactivate()
 4. 根据模式生成文件名
 5. 保存图片并更新编辑器内容
 
-#### 3. Clipboard Manager (`src/services/clipboardService.ts`)
+#### 3. Clipboard Manager (`src/clipboard/`)
 
 **职责**：
-- 读取系统剪贴板内容
+- 跨平台剪贴板图片读取
 - 判断剪贴板是否包含图片
 - 提取图片数据和格式
-- 处理 WSL2 环境兼容性
+- 处理不同平台的特殊情况
+
+**平台实现**：
+- Windows: PowerShell 脚本调用 .NET Framework
+- macOS: AppleScript 访问剪贴板
+- Linux: xclip (X11) 或 wl-paste (Wayland)
+- WSL: 调用 Windows PowerShell + 路径转换
 
 **关键接口**：
 ```typescript
-interface ClipboardService {
+interface ClipboardManager {
   hasImage(): Promise<boolean>
-  getImage(): Promise<ImageData | null>
+  readImage(): Promise<ClipboardImage | null>
+  cleanup(): Promise<void>
 }
 
-interface ImageData {
-  buffer: Buffer
-  format: string  // png, jpg, etc.
+interface ClipboardImage {
+  data: Buffer
+  format: ImageFormat
+  tempFilePath?: string
 }
 ```
 
@@ -126,10 +136,15 @@ interface FileNameOptions {
 **关键接口**：
 ```typescript
 interface OllamaClient {
-  analyzeImage(imageBuffer: Buffer): Promise<string>
-  isAvailable(): Promise<boolean>
+  generateImageName(imageBuffer: Buffer, mimeType: string): Promise<string | null>
+  isServiceAvailable(): Promise<boolean>
 }
 ```
+
+**特性**：
+- 服务可用性缓存（1分钟）
+- 3秒超时控制
+- 自动降级处理
 
 #### 6. File Manager (`src/services/fileManager.ts`)
 
@@ -230,15 +245,19 @@ interface PasteMarkConfig {
 
 1. **剪贴板错误**：提示用户剪贴板中没有图片
 2. **文件系统错误**：提示具体的文件操作失败原因
-3. **Ollama 服务错误**：自动降级到随机命名
+3. **Ollama 服务错误**：自动降级到时间戳命名
 4. **编辑器错误**：提示当前不是 Markdown 文件
+5. **文件冲突**：自动添加数字后缀
+6. **操作失败**：自动回滚（删除已创建的文件）
 
 ### 性能考虑
 
 1. **异步操作**：所有 I/O 操作使用异步方法
 2. **超时控制**：Ollama 调用设置 3 秒超时
-3. **内存管理**：及时释放图片 Buffer
+3. **内存管理**：及时释放图片 Buffer 和清理临时文件
 4. **错误恢复**：失败操作不影响编辑器状态
+5. **服务缓存**：Ollama 可用性检查缓存 1 分钟
+6. **并发控制**：避免重复的服务检查请求
 
 ### 扩展性设计
 
@@ -252,9 +271,12 @@ interface PasteMarkConfig {
 ### 安全考虑
 
 1. **文件名清理**：移除特殊字符，防止路径注入
-2. **文件大小限制**：限制处理图片最大 10MB
-3. **权限控制**：仅在用户工作区内创建文件
-4. **隐私保护**：Ollama 本地运行，图片不上传云端
+2. **文件名长度**：限制最大 255 字符
+3. **文件大小限制**：限制处理图片最大 10MB
+4. **权限控制**：仅在用户工作区内创建文件
+5. **隐私保护**：Ollama 本地运行，图片不上传云端
+6. **临时文件**：操作完成后自动清理
+7. **路径验证**：使用正斜杠统一路径格式
 
 ## 开发和测试
 
@@ -265,25 +287,37 @@ src/
 ├── extension.ts              # 插件入口
 ├── commands/
 │   └── pasteImageCommand.ts  # 命令处理
+├── clipboard/               # 剪贴板管理
+│   ├── types.ts            # 接口定义
+│   ├── base.ts             # 基类实现
+│   ├── clipboardManager.ts # 统一管理器
+│   ├── windows.ts          # Windows 实现
+│   ├── macos.ts            # macOS 实现
+│   ├── linux.ts            # Linux 实现
+│   └── wsl.ts              # WSL 实现
 ├── services/
-│   ├── clipboardService.ts   # 剪贴板服务
-│   ├── imageProcessor.ts     # 图片处理
-│   ├── ollamaClient.ts       # Ollama 客户端
+│   ├── editorService.ts     # 编辑器服务
 │   ├── fileManager.ts        # 文件管理
-│   └── editorService.ts      # 编辑器服务
-├── utils/
-│   ├── config.ts            # 配置工具
-│   └── logger.ts            # 日志工具
-└── types/
-    └── index.ts             # 类型定义
+│   ├── imageProcessor.ts     # 图片处理
+│   └── ollamaClient.ts       # Ollama 客户端
+├── resources/               # 系统脚本
+│   ├── windows-clipboard.ps1
+│   ├── mac-clipboard.applescript
+│   └── linux-clipboard.sh
+├── types/
+│   └── index.ts             # 类型定义
+└── utils/
+    └── stringUtils.ts       # 字符串工具
 ```
 
 ### 测试策略
 
-1. **单元测试**：每个服务模块独立测试
+1. **单元测试**：每个服务模块独立测试（Vitest）
 2. **集成测试**：测试模块间交互
-3. **端到端测试**：模拟用户操作流程
-4. **手动测试**：在不同环境下测试
+3. **端到端测试**：模拟用户操作流程（@vscode/test-electron）
+4. **跨平台测试**：在 Windows、macOS、Linux、WSL 下测试
+5. **测试覆盖率**：目标 60% 以上（当前 55.91%）
+6. **Mock 策略**：VSCode API 和外部服务使用 Mock
 
 ## 部署
 

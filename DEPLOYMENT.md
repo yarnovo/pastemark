@@ -4,10 +4,11 @@
 
 ## CI/CD 流程概述
 
-PasteMark 使用 GitHub Actions 实现自动化的持续集成和持续部署。整个流程包括：
+PasteMark 使用 GitHub Actions 实现自动化的持续集成和持续部署。整个流程分为三个作业：
 
-1. **持续集成（CI）**：代码提交后自动进行质量检查和测试
-2. **持续部署（CD）**：通过 Git tag 触发自动发布到 VSCode Marketplace
+1. **CI 作业**：代码质量检查、测试和构建
+2. **Package 作业**：打包扩展为 .vsix 文件
+3. **Publish 作业**：发布到 VSCode Marketplace（仅在打 tag 时触发）
 
 ## 工作流触发条件
 
@@ -28,7 +29,7 @@ PasteMark 使用 GitHub Actions 实现自动化的持续集成和持续部署。
 - 操作系统：Ubuntu Latest
 - Node.js 版本：20.x
 
-### 代码质量检查步骤
+### CI 作业步骤
 
 1. **安装依赖**
    ```bash
@@ -45,21 +46,53 @@ PasteMark 使用 GitHub Actions 实现自动化的持续集成和持续部署。
    npm run typecheck
    ```
 
-4. **运行测试**
+4. **设置显示环境**
    ```bash
-   npm test
+   sudo apt-get update
+   sudo apt-get install -y xvfb
+   ```
+   > 注：VSCode 测试需要虚拟显示环境
+
+5. **运行测试**
+   ```bash
+   xvfb-run -a npm test
+   ```
+   > 超时设置：10 分钟
+
+6. **生成测试覆盖率报告**
+   ```bash
+   xvfb-run -a npm run test:coverage
    ```
 
-5. **生成测试覆盖率报告**
-   ```bash
-   npm run test:coverage
-   ```
-   > 注：覆盖率报告仅在本地生成，不会上传到外部服务
-
-6. **构建扩展**
+7. **构建扩展**
    ```bash
    npm run vscode:prepublish
    ```
+
+8. **上传构建产物**
+   - 保存 `out/` 目录和 `*.vsix` 文件
+   - 保留 7 天
+
+### Package 作业步骤
+
+1. **安装 vsce**
+   ```bash
+   npm install -g @vscode/vsce
+   ```
+
+2. **构建扩展**
+   ```bash
+   npm run vscode:prepublish
+   ```
+
+3. **打包扩展**
+   ```bash
+   vsce package --no-dependencies
+   ```
+
+4. **上传 VSIX 包**
+   - 保存 `*.vsix` 文件
+   - 保留 30 天
 
 ## CD 流程详解
 
@@ -69,11 +102,26 @@ PasteMark 使用 GitHub Actions 实现自动化的持续集成和持续部署。
 2. 在本地更新 package.json 中的版本号
 3. 配置 GitHub Secret：`VSCE_PAT`
 
-### 发布步骤
+### Publish 作业步骤
 
-1. **打包扩展**：使用 vsce 打包成 .vsix 文件
-2. **发布到 Marketplace**：自动发布到 VSCode 扩展市场
-3. **创建 GitHub Release**：包含 .vsix 文件和更新说明
+1. **执行条件**：仅在 Git tag 以 `v` 开头时触发
+
+2. **构建和打包**
+   ```bash
+   npm run vscode:prepublish
+   vsce package --no-dependencies
+   ```
+
+3. **发布到 VSCode Marketplace**
+   ```bash
+   vsce publish -p $VSCE_PAT
+   ```
+
+4. **创建 GitHub Release**
+   - 使用 `softprops/action-gh-release@v2`
+   - 附加 .vsix 文件
+   - 自动生成发布说明
+   - 包含安装指南
 
 ## 部署准备
 
@@ -227,6 +275,16 @@ vsce publish
    - 确保所有必需文件都存在
    - 检查 .vscodeignore 配置
 
+## 测试环境要求
+
+### Linux 环境特殊设置
+
+VSCode 扩展测试需要图形界面，在 CI 环境中需要：
+
+1. **安装 Xvfb**（虚拟显示服务器）
+2. **设置显示环境变量**：`DISPLAY=':99.0'`
+3. **使用 xvfb-run 运行测试**
+
 ## 监控和维护
 
 ### 构建状态
@@ -252,12 +310,27 @@ npm update
 npm test
 ```
 
+## 工作流优化
+
+### 作业依赖关系
+
+1. **CI 作业**：所有提交都会运行
+2. **Package 作业**：依赖 CI 作业成功
+3. **Publish 作业**：依赖 CI 和 Package 作业，且仅在 tag 时运行
+
+### 产物保留策略
+
+- **构建产物**：7 天
+- **VSIX 包**：30 天
+- **GitHub Release**：永久保存
+
 ## 最佳实践
 
 1. **版本管理**：在本地管理版本号，确保与 tag 一致
 2. **测试先行**：发布前确保所有测试通过
 3. **文档同步**：及时更新 CHANGELOG.md
 4. **小步迭代**：频繁发布小版本，降低风险
+5. **使用最新工具**：使用 `@vscode/vsce` 代替旧版 `vsce`
 
 ## 相关资源
 

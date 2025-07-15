@@ -31,14 +31,16 @@ PasteMark 让图片粘贴变得简单高效。无论您是在撰写技术文档�
 
 ### 其他特性
 
-- 🎨 支持多种图片格式（PNG、JPG、GIF、BMP、WebP 等）
+- 🎨 支持多种图片格式（PNG、JPG、GIF、BMP）
 - 📁 图片自动保存到 Markdown 文件同级目录（可配置路径）
 - ⚡ 快速响应，3 秒超时自动降级
 - 🛡️ 错误处理完善，自动回滚和清理
-- 🐧 完美支持 WSL2 环境
+- 🐧 完美支持 WSL 环境
 - 📊 内置调试日志输出通道
 - 🔄 文件名自动去重，避免覆盖
 - 💾 Ollama 服务可用性缓存（1 分钟）
+- 🔒 文件名安全处理（移除特殊字符）
+- 📏 文件名长度限制（最大 255 字符）
 
 ## 安装
 
@@ -377,15 +379,17 @@ ollama run your-model "describe this image" --image test.jpg
 ### Q: 为什么粘贴时提示"剪贴板中没有图片"？
 
 A: 请确保您已经复制了图片到剪贴板。支持从以下来源复制：
-- 截图工具
+- 截图工具（如 Windows Snipping Tool、macOS Screenshot、Linux Screenshot）
 - 网页中的图片（右键复制图片）
 - 其他应用程序中的图片
 
-### Q: 如何在 WSL2 中使用？
+### Q: 如何在 WSL 中使用？
 
-A: PasteMark 已经针对 WSL2 环境优化，确保：
-1. 使用最新版本的 WSL2
-2. 安装了 `wl-clipboard` 包：`sudo apt install wl-clipboard`
+A: PasteMark 已经针对 WSL 环境优化：
+1. 自动调用 Windows 的 PowerShell 读取剪贴板
+2. 自动进行路径格式转换
+3. 支持 WSL 1 和 WSL 2
+4. 无需额外配置
 
 ### Q: Ollama 连接失败怎么办？
 
@@ -402,7 +406,20 @@ ollama pull your-desired-model
 
 ### Q: 支持哪些图片格式？
 
-A: 支持所有常见图片格式：PNG、JPG、JPEG、GIF、BMP、WebP 等。
+A: 支持以下图片格式：PNG、JPG、JPEG、GIF、BMP。默认保存为 PNG 格式，可通过配置修改。
+
+### Q: 图片保存在哪里？
+
+A: 默认保存在 Markdown 文件的同级目录。可以通过 `pastemark.imagePath` 配置修改保存路径：
+- `"./"`：当前文件目录（默认）
+- `"./images/"`：当前文件的 images 子目录
+- `"../assets/"`：上级目录的 assets 文件夹
+
+### Q: 文件名重复怎么办？
+
+A: PasteMark 会自动处理文件名冲突：
+- 如果文件已存在，会自动添加数字后缀
+- 例如：`diagram.png` → `diagram-1.png` → `diagram-2.png`
 
 ## 贡献
 
@@ -423,8 +440,19 @@ MIT License
 - TypeScript 类型安全
 - 模块化架构设计
 - 跨平台剪贴板支持（Windows、macOS、Linux、WSL）
-- 完整的扩展入口实现（extension.ts）
+- 完整的扩展入口实现
 - 输出通道日志记录
+- 文件名去重机制
+- 错误回滚机制
+- 临时文件自动清理
+- 路径验证和创建
+
+🚧 **计划中的功能**：
+- 支持更多图片格式（WebP、TIFF）
+- 图片压缩选项
+- 批量粘贴功能
+- 图片水印功能
+- 历史记录管理
 
 ## 更新日志
 
