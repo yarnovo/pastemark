@@ -45,7 +45,7 @@ PasteMark 让图片粘贴变得简单高效。无论您是在撰写技术文档�
 ### 方式一：从 VSCode 扩展市场安装
 
 1. 打开 VSCode
-2. 按下 `Ctrl+Shift+X` 打开扩展面板
+2. 按下 `Shift+X` 打开扩展面板
 3. 搜索 "PasteMark"
 4. 点击安装
 
@@ -339,7 +339,7 @@ PasteMark 支持所有 Ollama 视觉模型，**不限制模型选择**。用户�
 ### 配置模型和提示词
 
 1. **通过 VSCode 设置界面**：
-   - 打开 VSCode 设置 (`Ctrl+,`)
+   - 打开 VSCode 设置 (`,`)
    - 搜索 "pastemark"
    - 修改 `Ollama Model` 和 `Ollama Prompt`
 
