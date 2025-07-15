@@ -88,7 +88,12 @@ jobs:
       run: npm run vscode:prepublish
     
     - name: Package extension
-      run: vsce package --no-dependencies
+      run: |
+        if [[ "${{ github.ref_name }}" =~ -(alpha|beta|rc|dev)\. ]]; then
+          vsce package --pre-release --no-dependencies
+        else
+          vsce package --no-dependencies
+        fi
     
     - name: Upload VSIX package
       uses: actions/upload-artifact@v4
@@ -125,7 +130,12 @@ jobs:
       run: npm run vscode:prepublish
     
     - name: Package extension
-      run: vsce package --no-dependencies
+      run: |
+        if [[ "${{ github.ref_name }}" =~ -(alpha|beta|rc|dev)\. ]]; then
+          vsce package --pre-release --no-dependencies
+        else
+          vsce package --no-dependencies
+        fi
     
     - name: Determine release type
       id: release_type
