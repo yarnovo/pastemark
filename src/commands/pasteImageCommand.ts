@@ -27,26 +27,28 @@ export class PasteImageCommand {
     try {
       // 1. 检查是否在 Markdown 文件中
       if (!this.editorService.isMarkdownFile()) {
-        vscode.window.showErrorMessage('请在 Markdown 文件中使用此功能');
+        vscode.window.showErrorMessage('Please use this feature in Markdown files');
         return;
       }
 
       // 2. 检查剪贴板是否有图片
-      this.log('检查剪贴板中的图片...');
+      this.log('Checking clipboard for image...');
       const hasImage = await this.clipboardManager.hasImage();
       if (!hasImage) {
-        vscode.window.showWarningMessage('剪贴板中没有图片');
+        vscode.window.showWarningMessage('No image found in clipboard');
         return;
       }
 
       // 3. 获取图片数据
-      this.log('读取剪贴板图片...');
+      this.log('Reading clipboard image...');
       const imageData = await this.clipboardManager.getImage();
       if (!imageData) {
-        vscode.window.showErrorMessage('无法读取剪贴板中的图片');
+        vscode.window.showErrorMessage('Failed to read image from clipboard');
         return;
       }
-      this.log(`成功读取图片: ${imageData.buffer.length} 字节, 格式: ${imageData.format}`);
+      this.log(
+        `Successfully read image: ${imageData.buffer.length} bytes, format: ${imageData.format}`
+      );
 
       // 4. 获取选中的文本（如果有）
       const selection = this.editorService.getSelection();
@@ -58,7 +60,7 @@ export class PasteImageCommand {
       const imagePath = config.get<string>('imagePath', './');
 
       // 6. 生成文件名
-      const fileName = await this.imageProcessor.generateFileName({
+      const fileName = await this.generateFileNameWithProgress({
         selectedText,
         useOllama,
         imageData,
@@ -67,7 +69,7 @@ export class PasteImageCommand {
       // 7. 构建保存路径
       const documentPath = this.editorService.getDocumentPath();
       if (!documentPath) {
-        vscode.window.showErrorMessage('无法获取当前文档路径');
+        vscode.window.showErrorMessage('Unable to get current document path');
         return;
       }
 
@@ -81,7 +83,7 @@ export class PasteImageCommand {
         savedImagePath = uniqueImagePath;
       } catch (error) {
         vscode.window.showErrorMessage(
-          `保存图片失败: ${error instanceof Error ? error.message : String(error)}`
+          `Failed to save image: ${error instanceof Error ? error.message : String(error)}`
         );
         return;
       }
@@ -104,20 +106,20 @@ export class PasteImageCommand {
           await this.fileManager.deleteFile(savedImagePath);
         }
         vscode.window.showErrorMessage(
-          `插入图片引用失败: ${error instanceof Error ? error.message : String(error)}`
+          `Failed to insert image reference: ${error instanceof Error ? error.message : String(error)}`
         );
         return;
       }
 
       // 11. 显示成功消息
-      vscode.window.showInformationMessage(`图片已保存: ${path.basename(uniqueImagePath)}`);
+      vscode.window.showInformationMessage(`Image saved: ${path.basename(uniqueImagePath)}`);
 
       // 12. 清理临时文件
       await this.clipboardManager.cleanup();
     } catch (error) {
       this.logError('PasteImageCommand error', error);
       vscode.window.showErrorMessage(
-        `粘贴图片失败: ${error instanceof Error ? error.message : String(error)}`
+        `Failed to paste image: ${error instanceof Error ? error.message : String(error)}`
       );
 
       // 清理临时文件
@@ -127,6 +129,52 @@ export class PasteImageCommand {
         this.logError('Cleanup error', cleanupError);
       }
     }
+  }
+
+  /**
+   * 生成文件名（带进度提示）
+   */
+  private async generateFileNameWithProgress(options: {
+    selectedText?: string;
+    useOllama: boolean;
+    imageData: import('../types').ImageData;
+  }): Promise<string> {
+    const { selectedText, useOllama, imageData } = options;
+
+    // 如果有选中文本或不使用 Ollama，直接调用原方法
+    if (selectedText?.trim() || !useOllama) {
+      return this.imageProcessor.generateFileName({
+        selectedText,
+        useOllama,
+        imageData,
+      });
+    }
+
+    // 使用 Ollama 时显示进度提示
+    return vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: 'Generating filename...',
+        cancellable: false,
+      },
+      async (progress) => {
+        progress.report({ increment: 0, message: 'Analyzing image...' });
+
+        try {
+          const fileName = await this.imageProcessor.generateFileName({
+            selectedText,
+            useOllama,
+            imageData,
+          });
+
+          progress.report({ increment: 100, message: 'Filename generated' });
+          return fileName;
+        } catch (error) {
+          progress.report({ increment: 100, message: 'Using fallback naming' });
+          throw error;
+        }
+      }
+    );
   }
 
   private log(message: string): void {
