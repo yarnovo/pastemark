@@ -2,8 +2,8 @@
  * 剪贴板图片数据
  */
 export interface ClipboardImageData {
-  buffer: Buffer
-  format: 'png' | 'jpg' | 'gif' | 'bmp' | 'webp'
+  buffer: Buffer;
+  format: 'png' | 'jpg' | 'gif' | 'bmp' | 'webp';
 }
 
 /**
@@ -13,17 +13,17 @@ export interface IPlatformClipboard {
   /**
    * 检查剪贴板是否包含图片
    */
-  hasImage(): Promise<boolean>
-  
+  hasImage(): Promise<boolean>;
+
   /**
    * 获取剪贴板中的图片
    */
-  getImage(): Promise<ClipboardImageData | null>
-  
+  getImage(): Promise<ClipboardImageData | null>;
+
   /**
    * 清理临时资源
    */
-  cleanup(): Promise<void>
+  cleanup(): Promise<void>;
 }
 
 /**
@@ -33,15 +33,15 @@ export interface IClipboardManager {
   /**
    * 检查剪贴板是否包含图片
    */
-  hasImage(): Promise<boolean>
-  
+  hasImage(): Promise<boolean>;
+
   /**
    * 获取剪贴板中的图片
    */
-  getImage(): Promise<ClipboardImageData | null>
-  
+  getImage(): Promise<ClipboardImageData | null>;
+
   /**
    * 清理临时资源
    */
-  cleanup(): Promise<void>
+  cleanup(): Promise<void>;
 }
