@@ -127,11 +127,33 @@ jobs:
     - name: Package extension
       run: vsce package --no-dependencies
     
+    - name: Determine release type
+      id: release_type
+      run: |
+        TAG_NAME="${{ github.ref_name }}"
+        if [[ "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          echo "release_type=stable" >> $GITHUB_OUTPUT
+          echo "prerelease=false" >> $GITHUB_OUTPUT
+        elif [[ "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-(alpha|beta|rc|dev)\.[0-9]+$ ]]; then
+          echo "release_type=prerelease" >> $GITHUB_OUTPUT
+          echo "prerelease=true" >> $GITHUB_OUTPUT
+        else
+          echo "release_type=unknown" >> $GITHUB_OUTPUT
+          echo "prerelease=false" >> $GITHUB_OUTPUT
+        fi
+        echo "Detected release type: $(cat $GITHUB_OUTPUT)"
+    
     - name: Publish to VSCode Marketplace
       env:
         VSCE_PAT: ${{ secrets.VSCE_PAT }}
       run: |
-        vsce publish -p $VSCE_PAT
+        if [[ "${{ steps.release_type.outputs.release_type }}" == "prerelease" ]]; then
+          echo "Publishing pre-release version..."
+          vsce publish --pre-release -p $VSCE_PAT
+        else
+          echo "Publishing stable version..."
+          vsce publish -p $VSCE_PAT
+        fi
     
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
@@ -153,5 +175,5 @@ jobs:
           2. 在 VSCode 中运行命令：`Extensions: Install from VSIX...`
           3. 选择下载的文件进行安装
         draft: false
-        prerelease: false
+        prerelease: ${{ steps.release_type.outputs.prerelease == 'true' }}
         generate_release_notes: true
